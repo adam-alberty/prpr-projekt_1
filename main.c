@@ -9,6 +9,7 @@
 #define CAS_MERANIA 4
 #define DATUM_MERANIA 5
 
+// DONE
 // Prints items from dynamic array
 void print_items(char **items_global, int item_count_global) {
     for (int i = 0; i < item_count_global * 6; i++) {
@@ -16,6 +17,7 @@ void print_items(char **items_global, int item_count_global) {
     }
 }
 
+// DONE
 // Prints items from file
 void print_file(FILE **fp) {
     char line[20];
@@ -26,7 +28,8 @@ void print_file(FILE **fp) {
     }
 }
 
-// Opens file and reads it
+// DONE
+// Opens file and reads it (from dynamic array or raw file)
 void open_file(FILE **fp, char **items_global, int item_count_global) {
     if (*fp != NULL) {
         if (items_global != NULL) {
@@ -45,6 +48,7 @@ void open_file(FILE **fp, char **items_global, int item_count_global) {
     print_file(fp);
 }
 
+// DONE
 // Count items from file
 int count_items(FILE *fp) {
     fseek(fp, 0, SEEK_SET);
@@ -59,6 +63,8 @@ int count_items(FILE *fp) {
     return line_count / 7;
 }
 
+// DONE
+// Deallocates array containing measurements
 void deallocate_arrays(char ***items_global, int *item_count_global) {
     for (int i = 0; i < *item_count_global * 6; i++) {
         free((*items_global)[i]);
@@ -69,7 +75,8 @@ void deallocate_arrays(char ***items_global, int *item_count_global) {
     *item_count_global = 0;
 }
 
-// Allocate arrays dynamically   
+// DONE
+// Allocates arrays dynamically   
 void allocate_arrays(FILE **fp, char ***items_global, int *item_count_global) {
     if (*fp == NULL) {
         printf("Neotvoreny subor\n");
@@ -111,7 +118,6 @@ void allocate_arrays(FILE **fp, char ***items_global, int *item_count_global) {
         }
         strcpy(items[ item_idx], buff);
         items[item_idx][strlen(items[ item_idx]) - 1] = '\0';
-        printf("%s\n", items[ item_idx]);
         item_idx++;
     }
 
@@ -119,47 +125,51 @@ void allocate_arrays(FILE **fp, char ***items_global, int *item_count_global) {
     *item_count_global = item_count;
 }
 
-// void ciachovanie(char ***items_global, int item_count_global) {
-//     if (items_global == NULL) {
-//         printf("Polia nealokovane\n");
-//         return;
-//     }
+int month_difference(char *measurement_date, char *ciache_date) {
     
-//     int Y;
+}
 
-//     printf("Zadaj pocet mesiacov: ");
-//     scanf("%d", &Y);
-//     FILE *fp = fopen("./ciachovanie.txt", "r");
-//     if (fp == NULL) {
-//         return;
-//     };
+void ciachovanie(char **items_global, int item_count_global) {
+    int Y;
 
+    if (items_global == NULL) {
+        printf("Polia nealokovane\n");
+        return;
+    }
 
-//     for (int i = 0; i < item_count_global; i++) {
-//         fseek(fp, 0, SEEK_SET);
-//         char line[20];
+    printf("Zadaj pocet mesiacov: ");
+    scanf("%d", &Y);
+    FILE *fp = fopen("ciachovanie.txt", "r");
+    if (fp == NULL) {
+        printf("Subor ciachovanie.txt sa nepodarilo otvorit\n");
+        return;
+    };
 
-//         int k = -1;
-//         while (fgets(line, 20, fp) != NULL) {
-//             k = (k + 1) % 3;
+    for (int i = 0; i < item_count_global; i++) {
+        fseek(fp, 0, SEEK_SET);
+        char line[20];
 
-//             if (k == 2) {
-//                 fgets(line, 20, fp);
-//                 continue;
-//             }
+        int k = -1;
+        while (fgets(line, 20, fp) != NULL) {
+            k = (k + 1) % 3;
 
-//             if (k == 0) {
-//                 printf("Name: %s\n", items_global[i][ID_MODULU]);
-//                 printf("LINE ID MODULU: %s", line);
-//             }
+            if (k == 2) {
+                fgets(line, 20, fp);
+                continue;
+            }
 
-//             if (k == 1) {
-//                 printf("ARRAY DATUM: %s\n", items_global[i][DATUM_MERANIA]);
-//                 printf("LINE DATUM: %s", line);
-//             }
-//         }
-//     }
-// }
+            if (k == 0) {
+                printf("Name: %s\n", items_global[i][ID_MODULU]);
+                printf("LINE ID MODULU: %s", line);
+            }
+
+            if (k == 1) {
+                printf("ARRAY DATUM: %s\n", items_global[i][DATUM_MERANIA]);
+                printf("LINE DATUM: %s", line);
+            }
+        }
+    }
+}
 
 // int count_items_with_id(char *module_id, char *unit, char ***items_global, int item_count_global) {
 //     int count = 0;
@@ -218,10 +228,11 @@ int main(void) {
                 allocate_arrays(&fp, &items, &item_count);
                 printf("----------------ALLOCATE ARRAYS------------\n");
                 break;
-            // case 'c':
-            //     // TODO
-            //     ciachovanie(items, item_count);
-            //     break;
+            case 'c':
+                printf("----------------CIACHOVANIE------------\n");
+                ciachovanie(items, item_count);
+                printf("----------------CIACHOVANIE------------\n");
+                break;
             // case 's':
             //     // TODO
             //     vystup(items, item_count);
