@@ -209,14 +209,26 @@ void ciachovanie(char **items_global, int item_count_global) {
 //     }
 // }
 
+// DONE
+// Close file and deallocate arrays
+void clean_and_exit(FILE **fp, char ***items_global, int *item_count_global) {
+    if (*fp != NULL) {
+        fclose(*fp);
+        *fp = NULL;
+    }
+    deallocate_arrays(items_global, item_count_global);
+}
+
+
 int main(void) {
     char command;
     FILE *fp = NULL;
     char **items = NULL;
     int item_count = 0;
+    int running = 1;
 
     // Hlavny cyklus na zadavanie prikazov
-    while (command = getchar()) {
+    while ((command = getchar()) && running) {
         switch(command) {
             case 'v':
                 printf("----------------OPEN FILE------------\n");
@@ -232,6 +244,10 @@ int main(void) {
                 printf("----------------CIACHOVANIE------------\n");
                 ciachovanie(items, item_count);
                 printf("----------------CIACHOVANIE------------\n");
+                break;
+            case 'k':
+                clean_and_exit(&fp, &items, &item_count);
+                running = 0;
                 break;
             // case 's':
             //     // TODO
