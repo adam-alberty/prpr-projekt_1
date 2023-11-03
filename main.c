@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define ID_MODULU 0
 #define POZICIA_MODULU 1
@@ -125,10 +126,19 @@ void allocate_arrays(FILE **fp, char ***items_global, int *item_count_global) {
     *item_count_global = item_count;
 }
 
+// DONE
+// Calculate difference in months
 int month_difference(char *measurement_date, char *ciache_date) {
-    
+    int measurement_year, measurement_month, measurement_day;
+    int ciache_year, ciache_month, ciache_day;
+
+    sscanf(measurement_date, "%4d%2d%2d", &measurement_year, &measurement_month, &measurement_day);
+    sscanf(ciache_date, "%4d%2d%2d", &ciache_year, &ciache_month, &ciache_day);
+    return (measurement_year - ciache_year) * 12 + (measurement_month - ciache_month) + ((measurement_day - ciache_day) < 0 ? -1 : 0);
 }
 
+// DONE
+// Get message about modules ciached more than Y months ago.
 void ciachovanie(char **items_global, int item_count_global) {
     int Y;
 
@@ -137,7 +147,7 @@ void ciachovanie(char **items_global, int item_count_global) {
         return;
     }
 
-    printf("Zadaj pocet mesiacov: ");
+    printf("Pocet mesiacov: ");
     scanf("%d", &Y);
     FILE *fp = fopen("ciachovanie.txt", "r");
     if (fp == NULL) {
@@ -145,69 +155,36 @@ void ciachovanie(char **items_global, int item_count_global) {
         return;
     };
 
+    char id_ciached[20];
+    char date_ciached[20];
+    char blank_line[20];
+
     for (int i = 0; i < item_count_global; i++) {
         fseek(fp, 0, SEEK_SET);
-        char line[20];
 
-        int k = -1;
-        while (fgets(line, 20, fp) != NULL) {
-            k = (k + 1) % 3;
+        int is_ciached = 0;
+        while (fgets(id_ciached, sizeof(id_ciached) - 1, fp) != NULL) {
+            fgets(date_ciached, sizeof(date_ciached) - 1, fp);
+            fgets(blank_line, sizeof(blank_line) - 1, fp);
+            id_ciached[strlen(id_ciached) - 1] = '\0';
 
-            if (k == 2) {
-                fgets(line, 20, fp);
-                continue;
-            }
 
-            if (k == 0) {
-                printf("Name: %s\n", items_global[i][ID_MODULU]);
-                printf("LINE ID MODULU: %s", line);
-            }
-
-            if (k == 1) {
-                printf("ARRAY DATUM: %s\n", items_global[i][DATUM_MERANIA]);
-                printf("LINE DATUM: %s", line);
+            // // Ak sa ID rovnaju
+            if (strcmp(items_global[i * 6], id_ciached) == 0) {
+                is_ciached = 1;
+                int month_diff = month_difference(items_global[i * 6 + 5], date_ciached);
+                if (month_diff > Y) {
+                    printf("ID. mer. modulu [%s] ma %d mesiacov po ciachovani\n", items_global[i * 6], month_diff);
+                }
             }
         }
+
+        if (!is_ciached) {
+            printf("ID. mer. modulu [%s] nie je ciachovany.\n", items_global[i * 6]);
+        }
     }
+    fclose(fp);
 }
-
-// int count_items_with_id(char *module_id, char *unit, char ***items_global, int item_count_global) {
-//     int count = 0;
-//     for (int i = 0; i < item_count_global; i++) {
-//         if (strcmp(items_global[i][ID_MODULU], module_id) == 0 && strcmp(items_global[i][TYP_VELICINY], unit) == 0)
-//             count++;
-//     }
-
-//     return count;
-// }
-
-// void vystup(char ***items_global, int item_count_global) {
-//     if (items_global == NULL) {
-//         printf("Polia nie su vytvorene\n");
-//         return;
-//     }
-
-//     char module_id[6];
-//     char unit[3];
-
-//     scanf("%s %s", module_id, unit);
-//     int count = count_items_with_id(module_id, unit, items_global, item_count_global);
-//     if (count == 0) {
-//         printf("Pre dany vstup neexistuju zaznamy");
-//     }
-
-//     char **arr = malloc(sizeof(char *) * count);
-
-//     int arr_i = 0; 
-//     for (int i = 0; i < item_count_global; i++) {
-//         if (strcmp(items_global[i][ID_MODULU], module_id) == 0 && strcmp(items_global[i][TYP_VELICINY], unit) == 0) {
-//             char *value = malloc(sizeof(char) * 50);
-//             // strcpy(items_global[], value);
-//             arr[arr_i] = value; 
-//             arr_i++;
-//         }
-//     }
-// }
 
 // DONE
 // Close file and deallocate arrays
@@ -245,14 +222,14 @@ int main(void) {
                 ciachovanie(items, item_count);
                 printf("----------------CIACHOVANIE------------\n");
                 break;
-            case 'k':
-                clean_and_exit(&fp, &items, &item_count);
-                running = 0;
-                break;
             // case 's':
             //     // TODO
             //     vystup(items, item_count);
             //     break;
+            case 'k':
+                clean_and_exit(&fp, &items, &item_count);
+                running = 0;
+                break;
         }
     }    
     return 0;
