@@ -289,20 +289,107 @@ void export_measurements(char **items_global, int items_count_global) {
     free(measurements);
 }
 
+// DONE
+// Displays histogram of measured units
 void show_histogram(char **items_global, int item_count_global) {
     if (items_global == NULL) {
         printf("Polia nie su vytvorene\n");
         return;
     }
 
-    // [value, min, max]
+    int size = 5;
+    int idx = 0;
+
+    int *values = malloc(5 * sizeof(int));
+    if (values == NULL) {
+        printf("Couldn't allocate array");
+        return;
+    }
+
+    int *values_count = malloc(5 * sizeof(int));
+    if (values_count == NULL) {
+        free(values);
+        printf("Couldn't allocate array");
+        return;
+    }
+
+    double *values_min = malloc(5 * sizeof(double));
+    if (values_min == NULL) {
+        free(values);
+        free(values_count);
+        printf("Couldn't allocate array");
+        return;
+    }
+    double *values_max = malloc(5 * sizeof(double));
+    if (values_min == NULL) {
+        free(values);
+        free(values_count);
+        free(values_min);
+        printf("Couldn't allocate array");
+        return;
+    }
+
     for (int i = 0; i < item_count_global; i++) {
         char *value = items_global[i * 6 + 2];
+
+        int tracked = 0;
+        for (int j = 0; j < idx; j++) {
+            if (strcmp(value, items_global[values[j] * 6 + 2]) == 0) {
+                tracked = 1;
+                values_count[j] += 1;
+                double curr_value = atof(items_global[i * 6 + 3]);
+                if (curr_value < values_min[j]) {
+                    values_min[j] = curr_value;
+                }
+                if (curr_value > values_max[j]) {
+                    values_max[j] = curr_value;
+                }
+            }
+        }
+
+        // If the value isn't tracked, start tracking it
+        if (!tracked) {
+            values[idx] = i;
+            values_min[idx] = atof(items_global[i * 6 + 3]);
+            values_max[idx] = atof(items_global[i * 6 + 3]);
+            values_count[idx] = 1;
+
+            idx++;
+        }
+
+        if (idx == size) {
+            size = size + 5;
+
+            values = realloc(values, size * sizeof(int));
+            if (values == NULL) {
+                printf("Couldn't reallocate array");
+                return;
+            }
+            values_count = realloc(values_count, size * sizeof(int));
+            if (values_count == NULL) {
+                printf("Couldn't reallocate array");
+                return;
+            }
+            values_min = realloc(values_min, size * sizeof(double));
+            if (values_min == NULL) {
+                printf("Couldn't reallocate array");
+                return;
+            }
+            values_max = realloc(values_max, size * sizeof(double));
+            if (values_max == NULL) {
+                printf("Couldn't reallocate array");
+                return;
+            }
+        }
+    }
+
+    for (int i = 0; i < idx; i++) {
+        printf("%s\t%d\t%.2lf\t%.2lf\n", items_global[values[i] * 6 + 2], values_count[i], values_min[i], values_max[i]);
     }
 }
 
 // DONE
-// Delete measurements
+// Delete measurements of specified module
 void delete_measurements(char ***items_global, int *item_count_global) {
     if ((*items_global) == NULL) {
         printf("Polia nie su vytvorene\n");
