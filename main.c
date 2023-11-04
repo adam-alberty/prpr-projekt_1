@@ -291,9 +291,74 @@ void export_measurements(char **items_global, int items_count_global) {
 
 void show_histogram(char **items_global, int item_count_global) {
     if (items_global == NULL) {
-        printf("Polia nie su vytvorene");
+        printf("Polia nie su vytvorene\n");
         return;
     }
+
+    // [value, min, max]
+    for (int i = 0; i < item_count_global; i++) {
+        char *value = items_global[i * 6 + 2];
+    }
+}
+
+// DONE
+// Delete measurements
+void delete_measurements(char ***items_global, int *item_count_global) {
+    if ((*items_global) == NULL) {
+        printf("Polia nie su vytvorene\n");
+        return;
+    }
+
+    char module_id[10];
+    scanf("%s", module_id);
+
+    int *items_to_delete = malloc((*item_count_global) * sizeof(int));
+    if (items_to_delete == NULL) {
+        printf("Couldn't allocate memory");
+        return;
+    }
+    int new_item_count = 0;
+
+    for (int i = 0; i < *item_count_global; i++) {
+        if (strcmp((*items_global)[i * 6], module_id) == 0) {
+            items_to_delete[i] = 0;
+        } else {
+            items_to_delete[i] = 1;
+            new_item_count++;
+        }
+    }
+
+    char **new_items_global = malloc(sizeof(char*) * 6 * new_item_count);
+    if (new_items_global == NULL) {
+        printf("Couldn't reallocate memory");
+        return;
+    }
+
+    int idx = 0;
+    for (int i = 0; i < (*item_count_global); i++) {
+        if (!items_to_delete[i]) {
+            continue;
+        }
+
+        for (int j = 0; j < 6; j++) {
+            char *str = malloc(sizeof(char) * (strlen((*items_global)[i * 6 + j]) + 1));
+            if (str == NULL) {
+                printf("Couldn't allocate memory");
+                return;
+            }
+            strcpy(str, (*items_global)[i * 6 + j]);
+            new_items_global[idx * 6 + j] = str;
+        }
+        idx++;
+    }
+
+    int item_count_prev = *item_count_global;
+    // Deallocate previous arrays
+    deallocate_arrays(items_global, item_count_global);
+    *items_global = new_items_global;
+    *item_count_global = new_item_count;
+
+    printf("Vymazalo sa: %d zaznamov!\n", item_count_prev - new_item_count);
 }
 
 // DONE
@@ -341,6 +406,11 @@ int main(void) {
                 printf("----------------HISTOGRAM------------\n");
                 show_histogram(items, item_count);
                 printf("----------------HISTOGRAM------------\n");
+                break;
+            case 'z':
+                printf("----------------DELETE------------\n");
+                delete_measurements(&items, &item_count);
+                printf("----------------DELETE------------\n");
                 break;
             case 'k':
                 clean_and_exit(&fp, &items, &item_count);
