@@ -10,7 +10,6 @@
 #define CAS_MERANIA 4
 #define DATUM_MERANIA 5
 
-// DONE
 // Prints items from dynamic array
 void print_items(char **items_global, int item_count_global) {
     for (int i = 0; i < item_count_global * 6; i++) {
@@ -18,7 +17,6 @@ void print_items(char **items_global, int item_count_global) {
     }
 }
 
-// DONE
 // Prints items from file
 void print_file(FILE **fp) {
     char line[20];
@@ -29,7 +27,6 @@ void print_file(FILE **fp) {
     }
 }
 
-// DONE
 // Opens file and reads it (from dynamic array or raw file)
 void open_file(FILE **fp, char **items_global, int item_count_global) {
     if (*fp != NULL) {
@@ -49,7 +46,6 @@ void open_file(FILE **fp, char **items_global, int item_count_global) {
     print_file(fp);
 }
 
-// DONE
 // Count items from file
 int count_items(FILE *fp) {
     fseek(fp, 0, SEEK_SET);
@@ -64,7 +60,6 @@ int count_items(FILE *fp) {
     return line_count / 7;
 }
 
-// DONE
 // Deallocates array containing measurements
 void deallocate_arrays(char ***items_global, int *item_count_global) {
     for (int i = 0; i < *item_count_global * 6; i++) {
@@ -76,7 +71,6 @@ void deallocate_arrays(char ***items_global, int *item_count_global) {
     *item_count_global = 0;
 }
 
-// DONE
 // Allocates arrays dynamically   
 void allocate_arrays(FILE **fp, char ***items_global, int *item_count_global) {
     if (*fp == NULL) {
@@ -126,7 +120,6 @@ void allocate_arrays(FILE **fp, char ***items_global, int *item_count_global) {
     *item_count_global = item_count;
 }
 
-// DONE
 // Calculate difference in months
 int month_difference(char *measurement_date, char *ciache_date) {
     int measurement_year, measurement_month, measurement_day;
@@ -137,7 +130,6 @@ int month_difference(char *measurement_date, char *ciache_date) {
     return (measurement_year - ciache_year) * 12 + (measurement_month - ciache_month) + ((measurement_day - ciache_day) < 0 ? -1 : 0);
 }
 
-// DONE
 // Get message about modules ciached more than Y months ago.
 void ciachovanie(char **items_global, int item_count_global) {
     int Y;
@@ -186,13 +178,11 @@ void ciachovanie(char **items_global, int item_count_global) {
     fclose(fp);
 }
 
-// DONE
 // Get difference in 2 times
 int measurement_time_diff(char *a, char *b) {
     return atof(a) - atof(b);
 }
 
-// DONE
 // Export sorted measurements for specified module and unit to file
 void export_measurements(char **items_global, int items_count_global) {
     char module_id[6];
@@ -289,7 +279,6 @@ void export_measurements(char **items_global, int items_count_global) {
     free(measurements);
 }
 
-// DONE
 // Displays histogram of measured units
 void show_histogram(char **items_global, int item_count_global) {
     if (items_global == NULL) {
@@ -388,7 +377,6 @@ void show_histogram(char **items_global, int item_count_global) {
     }
 }
 
-// DONE
 // Delete measurements of specified module
 void delete_measurements(char ***items_global, int *item_count_global) {
     if ((*items_global) == NULL) {
@@ -448,7 +436,6 @@ void delete_measurements(char ***items_global, int *item_count_global) {
     printf("Vymazalo sa: %d zaznamov!\n", item_count_prev - new_item_count);
 }
 
-// DONE
 // Close file and deallocate arrays
 void clean_and_exit(FILE **fp, char ***items_global, int *item_count_global) {
     if (*fp != NULL) {
@@ -470,34 +457,22 @@ int main(void) {
     while ((command = getchar()) && running) {
         switch(command) {
             case 'v':
-                printf("----------------OPEN FILE------------\n");
                 open_file(&fp, items, item_count);
-                printf("----------------OPEN FILE------------\n");
                 break;
             case 'n':
-                printf("----------------ALLOCATE ARRAYS------------\n");
                 allocate_arrays(&fp, &items, &item_count);
-                printf("----------------ALLOCATE ARRAYS------------\n");
                 break;
             case 'c':
-                printf("----------------CIACHOVANIE------------\n");
                 ciachovanie(items, item_count);
-                printf("----------------CIACHOVANIE------------\n");
                 break;
             case 's':
-                printf("----------------EXPORT------------\n");
                 export_measurements(items, item_count);
-                printf("----------------EXPORT------------\n");
                 break;
             case 'h':
-                printf("----------------HISTOGRAM------------\n");
                 show_histogram(items, item_count);
-                printf("----------------HISTOGRAM------------\n");
                 break;
             case 'z':
-                printf("----------------DELETE------------\n");
                 delete_measurements(&items, &item_count);
-                printf("----------------DELETE------------\n");
                 break;
             case 'k':
                 clean_and_exit(&fp, &items, &item_count);
