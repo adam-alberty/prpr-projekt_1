@@ -187,6 +187,116 @@ void ciachovanie(char **items_global, int item_count_global) {
 }
 
 // DONE
+// Get difference in 2 times
+int measurement_time_diff(char *a, char *b) {
+    return atof(a) - atof(b);
+}
+
+// DONE
+// Export sorted measurements for specified module and unit to file
+void export_measurements(char **items_global, int items_count_global) {
+    char module_id[6];
+    char unit[3];
+
+    if (items_global == NULL) {
+        printf("Polia nie su vytvorene\n");
+        return;
+    }
+
+    scanf("%s %s", module_id, unit);
+
+    
+    int size = 10;
+    int idx = 0;
+    // To store indexes to values
+    int *measurements = malloc(size * sizeof(int));
+    if (measurements == NULL) {
+        printf("Couldn't allocate memory\n");
+        return;
+    }
+    
+    // Get measurements of specified module and unit
+    for (int i = 0; i < items_count_global; i++) {
+        if (strcmp(items_global[i * 6], module_id) == 0 && strcmp(items_global[i * 6 + 2], unit) == 0) {
+            measurements[idx] = i;
+            idx++;
+
+            if (size == idx) {
+                size += 10;
+                measurements = realloc(measurements, size * sizeof(int));
+                if (measurements == NULL) {
+                    printf("Couldn't reallocate memory\n");
+                    return;
+                }
+            }
+        }
+    }
+
+    if (idx == 0) {
+        printf("Pre dany vstup neexistuju zaznamy.\n");
+        free(measurements);
+        return;
+    }
+
+    // Sort the array - bubble sort
+    for (int i = 0; i < idx; i++) {
+        for (int j = i; j < idx - 1; j++) {
+            char a_datetime[20];
+            char *a_time = items_global[measurements[j] * 6 + 4];
+            char *a_date = items_global[measurements[j] * 6 + 5];
+            char b_datetime[20];
+            char *b_time = items_global[measurements[j + 1] * 6 + 4];
+            char *b_date = items_global[measurements[j + 1] * 6 + 5];
+
+            strcpy(a_datetime, a_date);
+            strcat(a_datetime, a_time);
+            strcpy(b_datetime, b_date);
+            strcat(b_datetime, b_time);
+
+            if (measurement_time_diff(a_datetime, b_datetime) > 0) {
+                int temp = measurements[j];
+                measurements[j] = measurements[j + 1];
+                measurements[j + 1] = temp;
+            }
+        }
+    }
+
+    FILE *fp = fopen("vystup_S.txt", "w");
+    if (fp == NULL) {
+        printf("Pre dany vstup nie je vytvoreny txt subor");
+        free(measurements);
+        return;
+    }
+
+    for (int i = 0; i < idx; i++) {
+        char *date = items_global[measurements[i] * 6 + 5];
+        char *time = items_global[measurements[i] * 6 + 4];
+        double value = atof(items_global[measurements[i] * 6 + 3]);
+        char *latitude_longitude = items_global[measurements[i] * 6 + 1];
+        char latitude[10], longitude[10];
+        strncpy(latitude, latitude_longitude, 7);
+        strcpy(longitude, latitude_longitude + 7);
+        double latitude_num = atof(latitude) / 10000;
+        double longitude_num = atof(longitude) / 10000;
+
+        char lat_sign = latitude_num < 0 ? '-' : '+';
+        char lon_sign = longitude_num < 0 ? '-' : '+';
+
+        fprintf(fp, "%s%s\t%.5lf\t%c%.4lf\t%c%.4lf\n", date, time, value, lat_sign, latitude_num, lon_sign, longitude_num);
+    }
+
+    fclose(fp);
+    free(measurements);
+}
+
+void show_histogram(char **items_global, int item_count_global) {
+    if (items_global == NULL) {
+        printf("Polia nie su vytvorene");
+        return;
+    }
+}
+
+// DONE
 // Close file and deallocate arrays
 void clean_and_exit(FILE **fp, char ***items_global, int *item_count_global) {
     if (*fp != NULL) {
@@ -222,10 +332,16 @@ int main(void) {
                 ciachovanie(items, item_count);
                 printf("----------------CIACHOVANIE------------\n");
                 break;
-            // case 's':
-            //     // TODO
-            //     vystup(items, item_count);
-            //     break;
+            case 's':
+                printf("----------------EXPORT------------\n");
+                export_measurements(items, item_count);
+                printf("----------------EXPORT------------\n");
+                break;
+            case 'h':
+                printf("----------------HISTOGRAM------------\n");
+                show_histogram(items, item_count);
+                printf("----------------HISTOGRAM------------\n");
+                break;
             case 'k':
                 clean_and_exit(&fp, &items, &item_count);
                 running = 0;
